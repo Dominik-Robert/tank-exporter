@@ -1,42 +1,14 @@
 version: "3.8"
 
-volumes:
-  prometheus_data: {}
-  grafana_data: {}
-
-networks:
-  front-tier:
-  back-tier:
-
 services:
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
+  tank-exporter:
+    image: dominikrobert/tank-exporter:v0.9.0-amd64
+    container_name: tank-exporter
     restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/etc/prometheus/console_libraries"
-      - "--web.console.templates=/etc/prometheus/consoles"
-      - "--web.enable-lifecycle"
+    environment:
+      - LATITUDE=51.575710
+      - LONGITUDE=7.209179
+      - APIKEY=YOUR_API_KEY
+      - RADIUS=5
     ports:
-      - 9090:9090
-    networks:
-      - back-tier
-  grafana:
-    image: grafana/grafana
-    user: "472"
-    depends_on:
-      - prometheus
-    ports:
-      - 3000:3000
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    restart: always
-    networks:
-      - back-tier
-      - front-tier
+      - "2112:2112" 
