@@ -22,6 +22,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.21
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: docker.io
+          username: dominikrobert
+          password: ${{ secrets.GH_PAT }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
