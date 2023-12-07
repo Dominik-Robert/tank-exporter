@@ -1,4 +1,4 @@
-project_name: monitoring-agent
+project_name: tank-exporter
 
 before:
   hooks:
