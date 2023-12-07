@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,41 +38,25 @@ type TankerKoenig struct {
 	} `json:"stations"`
 }
 
-type Config struct {
-	Lat  float64
-	Long float64
-	Rad  float64
-}
-
 var (
 	data map[string]prometheus.Gauge
 )
 
-func init() {
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath(".")
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-
+func main() {
 	viper.SetDefault("latitude", 51.575710)
 	viper.SetDefault("longitude", 7.209179)
-	viper.SetDefault("radius", 10)
-	viper.SetDefault("apiKey", "")
+	viper.SetDefault("radius", 2)
+	viper.SetDefault("apikey", "")
 
-	viper.ReadInConfig()
 	viper.AutomaticEnv()
-	viper.WatchConfig()
-}
 
-func main() {
 	data = make(map[string]prometheus.Gauge)
 	initialize()
 
 	fmt.Println("latitude:", viper.GetFloat64("latitude"))
 	fmt.Println("longitude:", viper.GetFloat64("longitude"))
 	fmt.Println("radius:", viper.GetFloat64("radius"))
-	fmt.Println("apiKey:", viper.GetString("apiKey"))
+	fmt.Println("apikey:", viper.GetString("apikey"))
 	fmt.Println("URL:", fmt.Sprintf("https://creativecommons.tankerkoenig.de/json/list.php?lat=%f&lng=%f&apikey=%s&type=all&rad=%d", viper.GetFloat64("latitude"), viper.GetFloat64("longitude"), viper.GetString("apiKey"), viper.GetInt("radius")))
 
 	router := gin.New()
@@ -88,12 +73,14 @@ func Middleware() gin.HandlerFunc {
 }
 
 func refresh() {
-	url := fmt.Sprintf("https://creativecommons.tankerkoenig.de/json/list.php?lat=%f&lng=%f&apikey=%s&type=all&rad=%f", viper.GetFloat64("latitude"), viper.GetFloat64("longitude"), viper.GetString("apiKey"), viper.GetFloat64("radius"))
+	url := fmt.Sprintf("https://creativecommons.tankerkoenig.de/json/list.php?lat=%f&lng=%f&apikey=%s&type=all&rad=%f", viper.GetFloat64("latitude"), viper.GetFloat64("longitude"), viper.GetString("apikey"), viper.GetFloat64("radius"))
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println("Cannot create request", err)
 	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -126,7 +113,7 @@ func initialize() {
 	if err != nil {
 		log.Println(err)
 	}
-
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
