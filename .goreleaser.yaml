@@ -17,13 +17,13 @@ builds:
       - -X main.GITCOMMIT={{.ShortCommit}}
 dockers:
   - image_templates:
-      - "dominik-robert/tank-exporter:{{ .Tag }}-amd64"
+      - "dominikrobert/tank-exporter:{{ .Tag }}-amd64"
     use: buildx
     build_flag_templates:
       - "--pull"
       - "--platform=linux/amd64"
   - image_templates:
-      - "dominik-robert/tank-exporter:{{ .Tag }}-arm64"
+      - "dominikrobert/tank-exporter:{{ .Tag }}-arm64"
     use: buildx
     build_flag_templates:
       - "--pull"
